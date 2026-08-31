@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pembukuan ATK Fine Printing Service
+</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#222}
+.topbar{height:64px;background:#1f2937;color:#fff;padding:0 24px;display:flex;align-items:center;justify-content:space-between; position: sticky; top: 0; z-index: 100; }
+.brand{font-size:20px;font-weight:700;display:flex !important;align-items:center !important;gap:12px}
+.brand-logo{height:38px !important;width:auto !important;max-width:150px;object-fit:contain;display:block}
+.top-date{font-size:13px;color:#d1d5db}
+.app-layout{display:flex;min-height:calc(100vh - 64px)}
+.sidebar{width:235px;background:#111827;padding:18px 12px;flex-shrink:0; position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto;}
+.menu-title{font-size:11px;color:#9ca3af;font-weight:bold;padding:8px 12px 12px;letter-spacing:.8px}
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;color:#d1d5db;border:0;padding:13px 14px;margin:4px 0;border-radius:9px;cursor:pointer;font-weight:600;font-size:14px}
+.nav-btn:hover,.nav-btn.active{background:#374151;color:#fff}
+.main-content{flex:1;padding:24px;max-width:1250px;width:100%;margin:0 auto}
+.page{display:none}.page.active{display:block}
+.page-head{margin-bottom:18px}.page-head h2{margin:0 0 5px;font-size:25px}.page-head p{margin:0;color:#6b7280;font-size:14px}
+
+
+
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.card h3{margin:0 0 8px;font-size:14px;color:#666}
+.amount{font-size:24px;font-weight:bold}
+.green{color:#16803c}.red{color:#dc2626}.blue{color:#2563eb}
+
+.section{background:#fff;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.section h2{margin-top:0;font-size:18px;margin-bottom:16px}
+form{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:end}
+#productForm{grid-template-columns:repeat(5,1fr)}
+#incomeForm{grid-template-columns:repeat(4,1fr)}
+label{font-size:13px;font-weight:bold;color:#555;display:block;margin-bottom:5px}
+input,select,button{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:7px;font-size:14px}
+input:focus,select:focus{outline:2px solid #bfdbfe;border-color:#2563eb}
+button{border:0;background:#2563eb;color:#fff;cursor:pointer;font-weight:bold}
+button:hover{opacity:.9}
+.btn-red{background:#dc2626}.btn-yellow{background:#d97706}.btn-gray{background:#6b7280}.btn-green{background:#16803c}
+table{width:100%;border-collapse:collapse;margin-top:16px}
+th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:14px}
+th{background:#f3f4f6}
+.small{font-size:12px;color:#777;margin-top:6px}
+.dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+.info-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.action-btns{display:flex;gap:6px}
+
+/* Filter Box Style */
+.filter-box{display:flex;gap:12px;align-items:end;margin-bottom:16px;background:#f9fafb;padding:14px;border-radius:8px;border:1px solid #e5e7eb;flex-wrap:wrap}
+.filter-box div{flex:1;min-width:160px}
+
+/* Modal Edit Style */
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:999}
+.modal-content{background:#fff;padding:24px;border-radius:12px;width:100%;max-width:450px;box-shadow:0 4px 15px rgba(0,0,0,0.2)}
+.modal-content h3{margin-top:0;margin-bottom:16px}
+.modal-content form{display:flex;flex-direction:column;gap:12px}
+.modal-actions{display:flex;gap:10px;margin-top:10px}
+
+@media(max-width:850px){
+ .sidebar{width:190px}.cards{grid-template-columns:1fr}.dashboard-grid{grid-template-columns:1fr}
+ form,#productForm,#incomeForm{grid-template-columns:1fr}
+}
+@media(max-width:650px){
+ .topbar{padding:0 14px}.brand{font-size:17px}.top-date{display:none}
+ .app-layout{display:block}.sidebar{width:100%;display:flex;overflow-x:auto;padding:8px}.menu-title{display:none}
+ .nav-btn{white-space:nowrap;width:auto;flex:0 0 auto}.main-content{padding:14px}
+ .section{padding:15px}table{display:block;overflow-x:auto;white-space:nowrap}
+}
+
+/* =================================================== */
+/* STYLESHEET KHUSUS UNTUK CETAK PDF                   */
+/* =================================================== */
+@media print {
+  body { background: #fff; color: #000; }
+  .topbar, .sidebar, button, input[type="month"], label[for="initialBalanceInput"], #initialBalanceInput, .no-print {
+    display: none !important;
+  }
+  .app-layout { display: block; }
+  .main-content { padding: 0; max-width: 100%; }
+  .section, .card { box-shadow: none; border: 1px solid #ccc; margin-bottom: 15px; page-break-inside: avoid; }
+  .cards { grid-template-columns: repeat(4, 1fr) !important; gap: 10px; }
+  .page { display: block !important; }
+  /* Hanya tampilkan halaman laporan saat dicetak */
+  #dashboard, #productsPage, #incomePage, #expensePage { display: none !important; }
+  #reportPage { display: block !important; }
+  th, td { border: 1px solid #ddd; padding: 6px 8px; font-size: 12px; }
+  .page-head h2::after { content: " (Laporan Pembukuan)"; font-size: 16px; color: #555; }
+}
+
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="logo.png" alt="Logo" class="brand-logo" onerror="this.style.display='none'">
+    <span>Pembukuan ATK Fine Printing</span>
+  </div>
+  <!-- Ditambahkan elemen jam di sini -->
+  <div class="top-date">
+    <span id="currentDate"></span> | <b id="currentTime"></b>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="menu-title">MENU UTAMA</div>
+    <button class="nav-btn active" onclick="showPage('dashboard',this)">📊 <span>Dashboard</span></button>
+    <button class="nav-btn" onclick="showPage('productsPage',this)">📦 <span>Barang & Stok</span></button>
+    <button class="nav-btn" onclick="showPage('incomePage',this)">💰 <span>Uang Masuk</span></button>
+    <button class="nav-btn" onclick="showPage('expensePage',this)">💸 <span>Uang Keluar</span></button>
+    <button class="nav-btn" onclick="showPage('reportPage',this)">📅 <span>Laporan Bulanan</span></button>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- DASHBOARD PAGE -->
+    <section id="dashboard" class="page active">
+      <div class="page-head">
+        <h2>Dashboard</h2>
+        <p id="dashSubTitle">Ringkasan pembukuan bulan ini</p>
+      </div>
+      
+      <div class="cards">
+        <div class="card">
+          <h3>Total Uang Masuk Bulan Ini</h3>
+          <div id="dashIn" class="amount green">Rp0</div>
+        </div>
+        <div class="card">
+          <h3>Total Uang Keluar Bulan Ini</h3>
+          <div id="dashOut" class="amount red">Rp0</div>
+        </div>
+        <div class="card">
+          <h3>Total Saldo Kas Akhir</h3>
+          <div id="dashBalance" class="amount blue">Rp0</div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="info-card">
+          <h3>📌 Cara Menggunakan</h3>
+          <ol>
+            <li>Masukkan barang dan stok di <b>Barang & Stok</b>.</li>
+            <li>Catat penjualan di <b>Uang Masuk</b>.</li>
+            <li>Catat pengeluaran di <b>Uang Keluar</b>.</li>
+            <li>Gunakan filter tanggal pada <b>Uang Masuk</b> dan <b>Uang Keluar</b> untuk memfilter rentang waktu tertentu.</li>
+            <li>Atur <b>Saldo Awal</b> & lihat/cetak PDF di <b>Laporan Bulanan</b>.</li>
+          </ol>
+        </div>
+        <div class="info-card">
+          <h3>💡 Status Penyimpanan</h3>
+          <p>Data tersimpan secara otomatis di Database MySQL XAMPP.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCTS PAGE -->
+    <section id="productsPage" class="page">
+      <div class="page-head">
+        <h2>Barang & Stok</h2>
+        <p>Kelola barang, harga, dan persediaan</p>
+      </div>
+      <div class="section">
+        <h2>📦 Daftar Barang & Stok</h2>
+        <div style="margin-bottom:12px">
+          <label>Cari Barang</label>
+          <input id="productSearch" type="search" placeholder="Ketik nama barang..." oninput="renderProducts()">
+        </div>
+        <form id="productForm">
+          <div><label>Nama Barang</label><input id="pName" required placeholder="Contoh: Item"></div>
+          <div><label>Harga Modal</label><input id="pCost" type="number" min="0" required placeholder="15000"></div>
+          <div><label>Harga Jual</label><input id="pSell" type="number" min="0" required placeholder="18000"></div>
+          <div><label>Jumlah Stok</label><input id="pStock" type="number" min="0" required placeholder="100"></div>
+          <button type="submit">+ Tambah Barang</button>
+        </form>
+        
+        <div style="margin-top:16px;padding:12px;background:#f9fafb;border-radius:8px">
+          <label>Tambah Stok Barang</label>
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-top:6px">
+            <select id="restockProduct"><option value="">-- Pilih Barang --</option></select>
+            <input id="restockQty" type="number" min="1" placeholder="Jumlah">
+            <button type="button" onclick="addStock()">+ Tambah Stok</button>
+          </div>
+        </div>
+        
+        <table>
+          <thead>
+            <tr><th>Barang</th><th>Harga Modal</th><th>Harga Jual</th><th>Stok</th><th>Untung</th><th>Aksi</th></tr>
+          </thead>
+          <tbody id="productTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- INCOME PAGE -->
+    <section id="incomePage" class="page">
+      <div class="page-head">
+        <h2>Uang Masuk</h2>
+        <p>Catat dan filter penjualan barang</p>
+      </div>
+      
+      <div class="section">
+        <h2>💰 Input Uang Masuk</h2>
+        <form id="incomeForm">
+          <div><label>Tanggal</label><input id="inDate" type="date" required></div>
+          
+          <div>
+            <label>Pilih Barang (Cari/Ketik)</label>
+            <input 
+              type="text" 
+              id="inProductInput" 
+              list="productList" 
+              placeholder="Ketik nama barang..." 
+              oninput="handleProductSelect()" 
+              autocomplete="off"
+              required
+            >
+            <datalist id="productList"></datalist>
+          </div>
+
+          <div><label>Jumlah Barang</label><input id="inQty" type="number" min="0" required oninput="handleProductSelect()"></div>
+          <div><label>Stok Tersedia</label><input id="inStock" type="number" readonly></div>
+          <div><label>Harga Jual / Barang</label><input id="inPrice" type="number" readonly></div>
+          <div><label>Total Uang Masuk</label><input id="inAmount" type="number" readonly></div>
+          <button type="submit">+ Simpan Penjualan</button>
+        </form>
+        <div class="small">Harga jual otomatis mengikuti daftar barang. Total = jumlah barang × harga jual.</div>
+      </div>
+
+      <div class="section">
+        <h2>🔍 Filter & Riwayat Uang Masuk</h2>
+        
+        <div class="filter-box">
+          <div>
+            <label>Dari Tanggal</label>
+            <input type="date" id="incomeStartDate" onchange="renderIncomeTable()">
+          </div>
+          <div>
+            <label>Sampai Tanggal</label>
+            <input type="date" id="incomeEndDate" onchange="renderIncomeTable()">
+          </div>
+          <div style="flex:0 0 auto;">
+            <button class="btn-gray" onclick="resetIncomeFilter()">Reset Filter</button>
+          </div>
+        </div>
+
+        <div style="font-weight:bold; margin-bottom:10px; font-size:15px;">
+          Total Uang Masuk Terfilter: <span id="incomeFilteredTotal" class="green">Rp0</span>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>Tanggal</th><th>Barang</th><th>Jumlah</th><th>Harga Satuan</th><th>Total</th><th>Aksi</th></tr>
+          </thead>
+          <tbody id="incomeTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXPENSE PAGE -->
+    <section id="expensePage" class="page">
+      <div class="page-head">
+        <h2>Uang Keluar</h2>
+        <p>Catat dan filter pengeluaran</p>
+      </div>
+      <div class="section">
+        <h2>💸 Uang Keluar Harian</h2>
+        <form id="expenseForm">
+          <div><label>Tanggal</label><input id="outDate" type="date" required></div>
+          <div><label>Keterangan</label><input id="outDesc" required placeholder="Beli stok / listrik"></div>
+          <div><label>Jumlah Uang</label><input id="outAmount" type="number" min="0" required placeholder="50000"></div>
+          <button type="submit">+ Simpan Uang Keluar</button>
+        </form>
+      </div>
+
+      <div class="section">
+        <h2>🔍 Filter & Riwayat Uang Keluar</h2>
+        
+        <div class="filter-box">
+          <div>
+            <label>Dari Tanggal</label>
+            <input type="date" id="expenseStartDate" onchange="renderExpenseTable()">
+          </div>
+          <div>
+            <label>Sampai Tanggal</label>
+            <input type="date" id="expenseEndDate" onchange="renderExpenseTable()">
+          </div>
+          <div style="flex:0 0 auto;">
+            <button class="btn-gray" onclick="resetExpenseFilter()">Reset Filter</button>
+          </div>
+        </div>
+
+        <div style="font-weight:bold; margin-bottom:10px; font-size:15px;">
+          Total Uang Keluar Terfilter: <span id="expenseFilteredTotal" class="red">Rp0</span>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>Tanggal</th><th>Keterangan</th><th>Jumlah</th><th>Aksi</th></tr>
+          </thead>
+          <tbody id="expenseTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REPORT PAGE -->
+    <section id="reportPage" class="page">
+      <div class="page-head" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h2>Laporan Bulanan</h2>
+          <p>Lihat total pemasukan, pengeluaran, dan saldo kas bulanan</p>
+        </div>
+        <!-- TOMBOL CETAK PDF -->
+        <button class="btn-green" style="width: auto; padding: 10px 20px;" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+      </div>
+      
+      <div class="section">
+        <h2>📅 Pilih Periode & Saldo Awal</h2>
+        <div style="display:flex; gap:16px; align-items:end; flex-wrap:wrap;">
+          <div style="flex:1; min-width:200px;">
+            <label for="monthFilter">Bulan & Tahun</label>
+            <input type="month" id="monthFilter" onchange="renderAll()">
+          </div>
+          <div style="flex:1; min-width:200px;">
+            <label for="initialBalanceInput">Saldo Awal Bulan Ini (Rp)</label>
+            <input type="number" id="initialBalanceInput" min="0" placeholder="0">
+          </div>
+          <button style="width:auto; padding:10px 20px;" onclick="saveInitialBalance()">💾 Simpan Saldo Awal</button>
+        </div>
+      </div>
+
+      <div class="cards" style="grid-template-columns: repeat(4, 1fr);">
+        <div class="card">
+          <h3>Saldo Awal</h3>
+          <div id="reportInit" class="amount blue">Rp0</div>
+        </div>
+        <div class="card">
+          <h3>Total Uang Masuk</h3>
+          <div id="reportIn" class="amount green">Rp0</div>
+        </div>
+        <div class="card">
+          <h3>Total Uang Keluar</h3>
+          <div id="reportOut" class="amount red">Rp0</div>
+        </div>
+        <div class="card">
+          <h3>Saldo Akhir Kas</h3>
+          <div id="reportBalance" class="amount blue">Rp0</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>📜 Rincian Transaksi Bulan Ini</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div>
+            <h3>💰 Uang Masuk</h3>
+            <table>
+              <thead><tr><th>Tanggal</th><th>Barang</th><th>Total</th></tr></thead>
+              <tbody id="reportIncomeTable"></tbody>
+            </table>
+          </div>
+          <div>
+            <h3>💸 Uang Keluar</h3>
+            <table>
+              <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Total</th></tr></thead>
+              <tbody id="reportExpenseTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODAL EDIT DATA -->
+<div id="editModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Edit Data</h3>
+    <form id="modalForm">
+      <div id="modalFields"></div>
+      <div class="modal-actions">
+        <button type="submit">Simpan Perubahan</button>
+        <button type="button" class="btn-gray" onclick="closeModal()">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const API_URL = "api.php";
+let data = { products: [], income: [], expense: [] };
+
+const rupiah = n => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n || 0);
+const today = () => new Date().toISOString().slice(0, 10);
+
+document.getElementById("inDate").value = today();
+document.getElementById("outDate").value = today();
+document.getElementById("monthFilter").value = today().slice(0, 7);
+
+async function loadData() {
+  const res = await fetch(`${API_URL}?action=get_all`);
+  data = await res.json();
+  renderAll();
+}
+
+// FORM SUBMITS
+document.getElementById("productForm").onsubmit = async e => {
+  e.preventDefault();
+  await fetch(`${API_URL}?action=add_product`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: pName.value, cost: +pCost.value, sell: +pSell.value, stock: +pStock.value })
+  });
+  e.target.reset();
+  loadData();
+};
+
+function handleProductSelect() {
+  const inputVal = document.getElementById("inProductInput").value.trim();
+  const product = data.products.find(x => x.name.toLowerCase() === inputVal.toLowerCase());
+
+  if (product) {
+    const qty = Math.max(1, +inQty.value || 1);
+    inPrice.value = product.sell;
+    inStock.value = product.stock;
+    inAmount.value = product.sell * qty;
+  } else {
+    inPrice.value = 0;
+    inStock.value = 0;
+    inAmount.value = 0;
+  }
+}
+
+document.getElementById("incomeForm").onsubmit = async e => {
+  e.preventDefault();
+  const inputVal = document.getElementById("inProductInput").value.trim();
+  const product = data.products.find(x => x.name.toLowerCase() === inputVal.toLowerCase());
+  const qty = Number(inQty.value);
+
+  if (!product) return alert("Barang tidak ditemukan! Silakan pilih nama barang yang sesuai dari daftar.");
+  if (qty < 1) return alert("Masukkan jumlah yang valid.");
+  if (qty > Number(product.stock)) return alert(`Stok tidak cukup! Tersedia: ${product.stock}`);
+
+  const res = await fetch(`${API_URL}?action=add_income`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      date: inDate.value,
+      productId: product.id,
+      qty: qty,
+      price: product.sell,
+      amount: product.sell * qty
+    })
+  });
+  
+  const result = await res.json();
+  if (result.status === "error") return alert(result.message);
+
+  e.target.reset();
+  document.getElementById("inProductInput").value = "";
+  inDate.value = today();
+  inQty.value = 1;
+  loadData();
+};
+
+document.getElementById("expenseForm").onsubmit = async e => {
+  e.preventDefault();
+  await fetch(`${API_URL}?action=add_expense`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ date: outDate.value, desc: outDesc.value, amount: +outAmount.value })
+  });
+  e.target.reset();
+  outDate.value = today();
+  loadData();
+};
+
+async function del(type, id) {
+  if (confirm("Hapus data ini?")) {
+    await fetch(`${API_URL}?action=delete&type=${type}&id=${id}`);
+    loadData();
+  }
+}
+
+async function addStock() {
+  const productId = Number(restockProduct.value);
+  const qty = +restockQty.value;
+  if (!productId || qty < 1) return alert("Pilih barang dan jumlah stok.");
+
+  await fetch(`${API_URL}?action=add_stock`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId, qty })
+  });
+  restockQty.value = "";
+  loadData();
+}
+
+// EDIT MODAL LOGIC
+function openEditModal(type, id) {
+  const modal = document.getElementById("editModal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalFields = document.getElementById("modalFields");
+  const modalForm = document.getElementById("modalForm");
+
+  modalFields.innerHTML = "";
+
+  if (type === "products") {
+    const p = data.products.find(x => Number(x.id) === id);
+    modalTitle.textContent = "Edit Barang";
+    modalFields.innerHTML = `
+      <div><label>Nama Barang</label><input id="editPName" value="${esc(p.name)}" required></div>
+      <div><label>Harga Modal</label><input id="editPCost" type="number" value="${p.cost}" required></div>
+      <div><label>Harga Jual</label><input id="editPSell" type="number" value="${p.sell}" required></div>
+      <div><label>Stok</label><input id="editPStock" type="number" value="${p.stock}" required></div>
+    `;
+    modalForm.onsubmit = async e => {
+      e.preventDefault();
+      await fetch(`${API_URL}?action=edit_product`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: p.id,
+          name: document.getElementById("editPName").value,
+          cost: +document.getElementById("editPCost").value,
+          sell: +document.getElementById("editPSell").value,
+          stock: +document.getElementById("editPStock").value
+        })
+      });
+      closeModal();
+      loadData();
+    };
+  } else if (type === "income") {
+    const inc = data.income.find(x => Number(x.id) === id);
+    modalTitle.textContent = "Edit Uang Masuk";
+    const options = data.products.map(p => `<option value="${p.id}" ${p.id == inc.product_id ? 'selected' : ''}>${esc(p.name)} - ${rupiah(p.sell)}</option>`).join("");
+    
+    modalFields.innerHTML = `
+      <div><label>Tanggal</label><input id="editInDate" type="date" value="${inc.date}" required></div>
+      <div><label>Barang</label><select id="editInProduct">${options}</select></div>
+      <div><label>Jumlah Barang</label><input id="editInQty" type="number" min="1" value="${inc.qty}" required></div>
+    `;
+    
+    modalForm.onsubmit = async e => {
+      e.preventDefault();
+      const pId = Number(document.getElementById("editInProduct").value);
+      const qty = Number(document.getElementById("editInQty").value);
+      const prod = data.products.find(x => Number(x.id) === pId);
+
+      const res = await fetch(`${API_URL}?action=edit_income`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: inc.id,
+          date: document.getElementById("editInDate").value,
+          productId: pId,
+          qty: qty,
+          price: prod ? prod.sell : inc.price,
+          amount: (prod ? prod.sell : inc.price) * qty
+        })
+      });
+      const result = await res.json();
+      if (result.status === "error") return alert(result.message);
+
+      closeModal();
+      loadData();
+    };
+  } else if (type === "expense") {
+    const exp = data.expense.find(x => Number(x.id) === id);
+    modalTitle.textContent = "Edit Uang Keluar";
+    modalFields.innerHTML = `
+      <div><label>Tanggal</label><input id="editOutDate" type="date" value="${exp.date}" required></div>
+      <div><label>Keterangan</label><input id="editOutDesc" value="${esc(exp.description)}" required></div>
+      <div><label>Jumlah Uang</label><input id="editOutAmount" type="number" min="0" value="${exp.amount}" required></div>
+    `;
+    modalForm.onsubmit = async e => {
+      e.preventDefault();
+      await fetch(`${API_URL}?action=edit_expense`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: exp.id,
+          date: document.getElementById("editOutDate").value,
+          desc: document.getElementById("editOutDesc").value,
+          amount: +document.getElementById("editOutAmount").value
+        })
+      });
+      closeModal();
+      loadData();
+    };
+  }
+
+  modal.style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("editModal").style.display = "none";
+}
+
+// RENDER TABLES & FILTERS
+function renderProducts() {
+  const q = (productSearch.value || "").toLowerCase().trim();
+  const list = data.products.filter(x => x.name.toLowerCase().includes(q));
+  
+  productTable.innerHTML = list.length ? list.map(x => `
+    <tr>
+      <td>${esc(x.name)}</td>
+      <td>${rupiah(x.cost)}</td>
+      <td>${rupiah(x.sell)}</td>
+      <td><b>${x.stock}</b></td>
+      <td class="green">${rupiah(x.sell - x.cost)}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-yellow" onclick="openEditModal('products',${x.id})">✏️ Edit</button>
+          <button class="btn-red" onclick="del('products',${x.id})">🗑️ Hapus</button>
+        </div>
+      </td>
+    </tr>
+  `).join("") : '<tr><td colspan="6">Barang tidak ditemukan.</td></tr>';
+  
+  updateProductSelect();
+  updateRestockSelect();
+}
+
+function renderIncomeTable() {
+  const start = document.getElementById("incomeStartDate").value;
+  const end = document.getElementById("incomeEndDate").value;
+
+  let filtered = data.income;
+
+  if (start) filtered = filtered.filter(x => x.date >= start);
+  if (end) filtered = filtered.filter(x => x.date <= end);
+
+  const totalFiltered = filtered.reduce((sum, x) => sum + Number(x.amount), 0);
+  document.getElementById("incomeFilteredTotal").textContent = rupiah(totalFiltered);
+
+  incomeTable.innerHTML = filtered.length ? filtered.map(x => `
+    <tr>
+      <td>${x.date}</td>
+      <td>${esc(x.desc_name || x.desc)}</td>
+      <td>${x.qty}</td>
+      <td>${rupiah(x.price)}</td>
+      <td>${rupiah(x.amount)}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-yellow" onclick="openEditModal('income',${x.id})">✏️ Edit</button>
+          <button class="btn-red" onclick="del('income',${x.id})">🗑️ Hapus</button>
+        </div>
+      </td>
+    </tr>
+  `).join("") : '<tr><td colspan="6">Tidak ada transaksi pada rentang tanggal ini.</td></tr>';
+}
+
+function resetIncomeFilter() {
+  document.getElementById("incomeStartDate").value = "";
+  document.getElementById("incomeEndDate").value = "";
+  renderIncomeTable();
+}
+
+function renderExpenseTable() {
+  const start = document.getElementById("expenseStartDate").value;
+  const end = document.getElementById("expenseEndDate").value;
+
+  let filtered = data.expense;
+
+  if (start) filtered = filtered.filter(x => x.date >= start);
+  if (end) filtered = filtered.filter(x => x.date <= end);
+
+  const totalFiltered = filtered.reduce((sum, x) => sum + Number(x.amount), 0);
+  document.getElementById("expenseFilteredTotal").textContent = rupiah(totalFiltered);
+
+  expenseTable.innerHTML = filtered.length ? filtered.map(x => `
+    <tr>
+      <td>${x.date}</td>
+      <td>${esc(x.description || x.desc)}</td>
+      <td>${rupiah(x.amount)}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-yellow" onclick="openEditModal('expense',${x.id})">✏️ Edit</button>
+          <button class="btn-red" onclick="del('expense',${x.id})">🗑️ Hapus</button>
+        </div>
+      </td>
+    </tr>
+  `).join("") : '<tr><td colspan="4">Tidak ada pengeluaran pada rentang tanggal ini.</td></tr>';
+}
+
+function resetExpenseFilter() {
+  document.getElementById("expenseStartDate").value = "";
+  document.getElementById("expenseEndDate").value = "";
+  renderExpenseTable();
+}
+
+function updateProductSelect() {
+  const datalist = document.getElementById("productList");
+  if (!datalist) return;
+  datalist.innerHTML = data.products.map(x => 
+    `<option value="${esc(x.name)}">Stok: ${x.stock} | Harga: ${rupiah(x.sell)}</option>`
+  ).join("");
+}
+
+function updateRestockSelect() {
+  restockProduct.innerHTML = '<option value="">-- Pilih Barang --</option>' +
+    data.products.map(x => `<option value="${x.id}">${esc(x.name)} | Stok: ${x.stock}</option>`).join("");
+}
+
+function showPage(id, btn) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+async function saveInitialBalance() {
+  const month = monthFilter.value;
+  const amount = +document.getElementById("initialBalanceInput").value || 0;
+
+  await fetch(`${API_URL}?action=set_initial_balance`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ month, amount })
+  });
+
+  alert("Saldo awal berhasil disimpan!");
+  renderAll();
+}
+
+async function renderReport() {
+  const selectedMonth = monthFilter.value;
+
+  const resInit = await fetch(`${API_URL}?action=get_initial_balance&month=${selectedMonth}`);
+  const dataInit = await resInit.json();
+  const initialBalance = dataInit.amount || 0;
+
+  document.getElementById("initialBalanceInput").value = initialBalance;
+
+  const filteredIncome = data.income.filter(x => x.date.startsWith(selectedMonth));
+  const filteredExpense = data.expense.filter(x => x.date.startsWith(selectedMonth));
+
+  const totalIn = filteredIncome.reduce((s, x) => s + Number(x.amount), 0);
+  const totalOut = filteredExpense.reduce((s, x) => s + Number(x.amount), 0);
+
+  const finalBalance = initialBalance + totalIn - totalOut;
+
+  reportInit.textContent = rupiah(initialBalance);
+  reportIn.textContent = rupiah(totalIn);
+  reportOut.textContent = rupiah(totalOut);
+  reportBalance.textContent = rupiah(finalBalance);
+
+  dashIn.textContent = rupiah(totalIn);
+  dashOut.textContent = rupiah(totalOut);
+  dashBalance.textContent = rupiah(finalBalance);
+
+  reportIncomeTable.innerHTML = filteredIncome.length ? filteredIncome.map(x => `
+    <tr><td>${x.date}</td><td>${esc(x.desc_name || x.desc)} (${x.qty}x)</td><td>${rupiah(x.amount)}</td></tr>
+  `).join("") : '<tr><td colspan="3">Tidak ada data.</td></tr>';
+
+  reportExpenseTable.innerHTML = filteredExpense.length ? filteredExpense.map(x => `
+    <tr><td>${x.date}</td><td>${esc(x.description || x.desc)}</td><td>${rupiah(x.amount)}</td></tr>
+  `).join("") : '<tr><td colspan="3">Tidak ada data.</td></tr>';
+}
+
+function renderAll() {
+  renderProducts();
+  renderIncomeTable();
+  renderExpenseTable();
+  renderReport();
+}
+
+function esc(s) {
+  return String(s || '').replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m]));
+}
+
+// GANTI DENGAN KODE JAM REAL-TIME INI:
+function updateClock() {
+  const now = new Date();
+  
+  const dateOptions = { weekday: "long", day: "numeric", month: "long", year: "numeric" };
+  const timeOptions = { hour: "2-digit", minute: "2-digit", second: "2-digit" };
+  
+  const elDate = document.getElementById("currentDate");
+  const elTime = document.getElementById("currentTime");
+
+  if (elDate) elDate.textContent = now.toLocaleDateString("id-ID", dateOptions);
+  if (elTime) elTime.textContent = now.toLocaleTimeString("id-ID", timeOptions) + " WIB";
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+loadData();
+</script>
+
+</body>
+</html>
